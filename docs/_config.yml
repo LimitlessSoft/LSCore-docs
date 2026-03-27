@@ -3,8 +3,8 @@ description: Free and open-source .NET 9.0 libraries for ASP.NET Core APIs
 remote_theme: just-the-docs/just-the-docs@v0.10.0
 color_scheme: dark
 
-url: https://limitlesssoft.github.io
-baseurl: /LSCore-docs
+url: https://core.wiki.limitlesssoft.com
+baseurl: ""
 
 nav_external_links:
   - title: GitHub
