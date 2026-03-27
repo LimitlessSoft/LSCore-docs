@@ -1,0 +1,24 @@
+title: LSCore Documentation
+description: Free and open-source .NET 9.0 libraries for ASP.NET Core APIs
+remote_theme: just-the-docs/just-the-docs@v0.10.0
+color_scheme: dark
+
+url: https://limitlesssoft.github.io
+baseurl: /LSCore-docs
+
+nav_external_links:
+  - title: GitHub
+    url: https://github.com/LimitlessSoft/LSCore
+  - title: NuGet
+    url: https://www.nuget.org/profiles/LimitlessSoft
+  - title: Discord
+    url: https://discord.gg/PTWERkBV
+
+footer_content: "LSCore is free and open-source."
+
+# Enable search
+search_enabled: true
+
+# Aux links (top right)
+aux_links:
+  GitHub: https://github.com/LimitlessSoft/LSCore
