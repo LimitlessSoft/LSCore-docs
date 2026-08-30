@@ -26,7 +26,7 @@ LSCore uses the exception-based approach because the performance difference is n
 | `LSCore.Exceptions` | Core exception classes. No ASP.NET Core dependency. |
 | `LSCore.Exceptions.DependencyInjection` | ASP.NET Core middleware that catches LSCore exceptions and sets the HTTP response status code. Depends on `LSCore.Exceptions` and the `Microsoft.AspNetCore.App` framework reference. |
 
-Both packages target **.NET 9.0** (version 9.1.4.1 at time of writing).
+Both packages target **.NET 9.0** (version 9.1.5 at time of writing).
 
 ## Exception Types
 
@@ -34,18 +34,21 @@ All exception types live in the `LSCore.Exceptions` namespace, extend `System.Ex
 
 | Exception Class | HTTP Status Code | Typical Use |
 |---|---|---|
-| `LSCoreBadRequestException` | 400 Bad Request | The client sent invalid or malformed input. The exception message is written to the response body so the caller knows what was wrong. |
+| `LSCoreBadRequestException` | 400 Bad Request | The client sent invalid or malformed input. |
 | `LSCoreUnauthenticatedException` | 401 Unauthorized | The request lacks valid authentication credentials. |
 | `LSCoreForbiddenException` | 403 Forbidden | The authenticated user does not have permission to access the requested resource. |
 | `LSCoreNotFoundException` | 404 Not Found | The requested resource does not exist. |
-| `LSCoreInternalException` | 500 Internal Server Error | An unexpected server-side error occurred. Handled by the middleware's default branch, same as any unrecognized exception. |
+| `LSCoreInternalException` | 500 Internal Server Error | An unexpected server-side error occurred. Handled exactly like any unrecognized exception. |
 
 ### Detailed Behavior Notes
 
-- **LSCoreBadRequestException** is the only exception whose `Message` is written back to the HTTP response body. This lets you surface validation details to the caller.
-- **LSCoreUnauthenticatedException** and **LSCoreForbiddenException** set the status code only; no body is written.
-- **LSCoreNotFoundException** sets the status code only; no body is written.
-- **LSCoreInternalException** (and any other unhandled exception) results in a 500 status code. The exception is also logged via `ILogger` at the `Error` level.
+- The four **4xx** exceptions write their `Message` to the response body, so you can surface the reason to the caller.
+- The body is sent with a `Content-Type`: `application/json; charset=utf-8` when the message is a JSON object or array, `text/plain; charset=utf-8` otherwise. This is what makes validation errors parseable -- `Validate()` throws its FluentValidation errors as a serialized JSON array, and typed HTTP clients dispatch on the content type.
+- An empty message produces an empty body and no `Content-Type`.
+- **LSCoreInternalException** (and any other unhandled exception) results in a 500 with an **empty body**. The message is logged via `ILogger` at the `Error` level but never returned, so internal detail cannot leak to the caller. The 4xx paths are not logged -- they are expected outcomes, not failures.
+- An `AggregateException` with a single inner exception (from `Task.WhenAll`, `.Result` or `.Wait()`) and a `TargetInvocationException` (from reflection) are unwrapped first, so a wrapped `LSCoreNotFoundException` still returns 404. An `AggregateException` carrying several exceptions has no single status code to map to and becomes a 500.
+- If the client disconnects mid-request, the resulting `OperationCanceledException` is not treated as an error: it is logged at `Debug` and the response is left alone.
+- If an exception is thrown **after** the response has started, the status code can no longer be changed. The exception is logged and rethrown, which aborts the connection so the client sees a truncated response instead of an apparently successful one.
 
 ## Setting Up the Middleware
 
@@ -148,7 +151,9 @@ public class PaymentService
 
 When an exception propagates out of the request pipeline, `LSCoreExceptionsHandleMiddleware` catches it and performs the following:
 
-1. Matches the exception type using a `switch` expression.
-2. Sets `context.Response.StatusCode` to the corresponding HTTP status code.
-3. For `LSCoreBadRequestException` only, writes `exception.Message` to the response body.
-4. For any exception that does not match a known LSCore type (the `default` branch), logs the exception at `Error` level and returns 500.
+1. Returns immediately (logging at `Debug`) if the client has disconnected, or rethrows if the response has already started.
+2. Unwraps single-exception `AggregateException`s and `TargetInvocationException`s.
+3. Matches the exception type using a `switch`.
+4. Sets `context.Response.StatusCode` to the corresponding HTTP status code.
+5. For the four 4xx types, writes `exception.Message` to the response body with `application/json` or `text/plain` depending on whether the message is JSON.
+6. For `LSCoreInternalException` and any other exception, logs at `Error` level and returns 500 with an empty body.
