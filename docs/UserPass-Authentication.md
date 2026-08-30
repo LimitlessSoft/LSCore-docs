@@ -166,6 +166,8 @@ new LSCoreAuthUserPassConfiguration
 
 With the option on, plain BCrypt hashes are accepted and each such login is logged as a warning. Rehash those passwords with `LSCoreAuthUserPassHelpers.HashPassword` as users log in, then turn the option back off.
 
+A stored password that is not a usable BCrypt hash at all -- blank, truncated, or written by a different algorithm -- is treated as a failed login (`LSCoreForbiddenException`), the same as a wrong password, rather than surfacing as a server error.
+
 ### Auth Context
 
 After middleware execution, the authenticated user's identity is available through `LSCoreAuthContextEntity<TEntityIdentifier>`, which is registered as a scoped service:
