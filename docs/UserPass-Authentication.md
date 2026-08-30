@@ -33,6 +33,8 @@ Extends `LSCoreAuthConfiguration` with JWT-specific settings:
 | `AccessTokenExpirationMinutes` | `int` | `30` | How long access tokens are valid, in minutes. |
 | `RefreshTokenExpirationDays` | `int` | `7` | How long refresh tokens are valid, in days. |
 | `TokenSkew` | `TimeSpan` | `5 minutes` | Clock skew tolerance for token validation. |
+| `PasswordHashWorkFactor` | `int` | `12` | BCrypt work factor used by `LSCoreAuthUserPassHelpers.HashPassword`. Each increment doubles hashing and verification time. |
+| `AllowLegacyBCryptHashes` | `bool` | `false` | When `true`, passwords stored as plain `BCrypt.HashPassword` hashes are accepted on login (and logged as a warning) so an existing user table can be migrated. See [Password Hashing](#password-hashing). |
 | `AuthAll` | `bool` | `false` | When `true`, every request requires authentication. When `false`, only endpoints with `[LSCoreAuthAttribute]` are checked. |
 | `BreakOnFailedAuth` | `bool` | `true` | When `true`, unauthenticated requests to protected endpoints throw `LSCoreUnauthenticatedException`. |
 
@@ -122,13 +124,47 @@ Tokens are signed with HMAC-SHA256 using the `SecurityKey` from configuration.
 
 ### Password Hashing
 
-Passwords are hashed using BCrypt with Enhanced hashing and a random work factor between 8 and 12. Use the provided helper to hash passwords before storing them:
+Passwords are hashed using BCrypt **Enhanced** hashing with a work factor of 12. Use the provided helper to hash passwords before storing them:
 
 ```csharp
 using LSCore.Auth.UserPass.Domain;
 
 var hashedPassword = LSCoreAuthUserPassHelpers.HashPassword("raw-password");
 ```
+
+To use a different work factor, pass it explicitly or pass your configuration:
+
+```csharp
+LSCoreAuthUserPassHelpers.HashPassword("raw-password", 14);
+LSCoreAuthUserPassHelpers.HashPassword("raw-password", configuration);
+```
+
+Raising the work factor is safe for existing users: BCrypt stores the cost inside the hash, so hashes written with an older, lower work factor keep verifying.
+
+> **⚠️ Hashes must come from `LSCoreAuthUserPassHelpers.HashPassword`, not from `BCrypt.HashPassword`.**
+>
+> LSCore uses BCrypt's `Enhanced*` methods, which pre-hash the password with SHA-384. A hash from plain `BCrypt.HashPassword` looks identical (`$2a$NN$...`) but will **never** verify against `EnhancedVerify`:
+>
+> ```csharp
+> BCrypt.Net.BCrypt.EnhancedVerify(pw, LSCoreAuthUserPassHelpers.HashPassword(pw)); // true
+> BCrypt.Net.BCrypt.EnhancedVerify(pw, BCrypt.Net.BCrypt.HashPassword(pw));         // false
+> ```
+
+#### Migrating a table hashed with plain BCrypt
+
+If your users' passwords were hashed with plain `BCrypt.HashPassword`, every login fails with `LSCoreForbiddenException` -- the same result as a wrong password. `Authenticate` detects this case: when `EnhancedVerify` fails it retries with plain `BCrypt.Verify`, and if that succeeds it logs a warning naming the user and explaining the mismatch.
+
+The login is still rejected unless you opt in:
+
+```csharp
+new LSCoreAuthUserPassConfiguration
+{
+    // ...
+    AllowLegacyBCryptHashes = true
+}
+```
+
+With the option on, plain BCrypt hashes are accepted and each such login is logged as a warning. Rehash those passwords with `LSCoreAuthUserPassHelpers.HashPassword` as users log in, then turn the option back off.
 
 ### Auth Context
 
