@@ -7,9 +7,9 @@ permalink: /
 
 # LSCore Documentation
 
-LSCore is a collection of free and open-source .NET 9.0 libraries that simplify building ASP.NET Core APIs. Its core principles are **simplicity** and **abstraction**: features are divided into independent packages so you include only what you need.
+LSCore is a collection of free and open-source .NET 10.0 libraries that simplify building ASP.NET Core APIs. Its core principles are **simplicity** and **abstraction**: features are divided into independent packages so you include only what you need.
 
-All packages are published to [NuGet](https://www.nuget.org/profiles/LimitlessSoft) and share a synchronized version (currently **9.1.4.1**).
+All packages are published to [NuGet](https://www.nuget.org/profiles/LimitlessSoft) and share a synchronized version (currently **10.0.0**).
 
 ---
 

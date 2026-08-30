@@ -14,7 +14,7 @@ The LSCore Logging module provides a single extension method that wires up the s
 |---|---|
 | `LSCore.Logging` | Configures console and debug logging providers on a `WebApplicationBuilder`. Depends on `Microsoft.AspNetCore.App` (framework reference). |
 
-The package targets **.NET 9.0** (version 9.1.4.1 at time of writing). It has no external NuGet dependencies beyond the ASP.NET Core shared framework.
+The package targets **.NET 10.0** (version 10.0.0 at time of writing). It has no external NuGet dependencies beyond the ASP.NET Core shared framework.
 
 ---
 

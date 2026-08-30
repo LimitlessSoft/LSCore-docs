@@ -15,7 +15,7 @@ The LSCore Common module provides shared contracts and utility extensions used a
 | `LSCore.Common.Contracts` | Shared request/response contracts that have not yet been promoted to their own domain-specific packages. |
 | `LSCore.Common.Extensions` | General-purpose extension methods and supporting types that have not yet been promoted to their own domain-specific packages. |
 
-Both packages target **.NET 9.0** (version 9.1.4.1 at time of writing). Neither package has external NuGet dependencies.
+Both packages target **.NET 10.0** (version 10.0.0 at time of writing). Neither package has external NuGet dependencies.
 
 ---
 

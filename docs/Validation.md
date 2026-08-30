@@ -16,10 +16,10 @@ The validation system is split into two packages:
 
 | Package | Description | Version |
 |---------|-------------|---------|
-| `LSCore.Validation.Contracts` | Interfaces and attributes -- no external dependencies | 9.1.4.1 |
-| `LSCore.Validation.Domain` | Base class, extension methods, and FluentValidation integration | 9.1.4.1 |
+| `LSCore.Validation.Contracts` | Interfaces and attributes -- no external dependencies | 10.0.0 |
+| `LSCore.Validation.Domain` | Base class, extension methods, and FluentValidation integration | 10.0.0 |
 
-Both target **.NET 9.0**.
+Both target **.NET 10.0**.
 
 ### Dependencies
 
@@ -28,10 +28,16 @@ Both target **.NET 9.0**.
 - `LSCore.Validation.Contracts`
 - `LSCore.DependencyInjection`
 - `LSCore.Exceptions`
-- `FluentValidation` 11.11.0
-- `Newtonsoft.Json` 13.0.3
+- `FluentValidation` 12.1.1
+- `Newtonsoft.Json` 13.0.4
 
 `LSCore.Validation.Contracts` has no external package dependencies.
+
+> **FluentValidation 12 is required from LSCore 10.0.0.** `LSCoreValidatorBase<T>` publicly derives
+> from `AbstractValidator<T>`, so the FluentValidation major version is part of this package's API
+> surface -- referencing `LSCore.Validation.Domain` 10.0.0 pulls your project onto FluentValidation
+> 12. The serialized validation error payload is unchanged from LSCore 9.x. Projects that must stay
+> on FluentValidation 11 should stay on the LSCore `9.1.x` line.
 
 ---
 

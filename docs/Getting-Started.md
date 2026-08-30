@@ -6,20 +6,20 @@ nav_order: 2
 
 # Getting Started with LSCore
 
-LSCore is a modular .NET 9 framework that provides building blocks for ASP.NET Core applications, including authentication, validation, object mapping, sorting/pagination, repository abstractions, exception handling, and more. Each module is published as a separate NuGet package so you only pull in what you need.
+LSCore is a modular .NET 10 framework that provides building blocks for ASP.NET Core applications, including authentication, validation, object mapping, sorting/pagination, repository abstractions, exception handling, and more. Each module is published as a separate NuGet package so you only pull in what you need.
 
 ---
 
 ## Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) or later
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) or later
 - An IDE such as Visual Studio, Rider, or VS Code with the C# extension
 
 ---
 
 ## Available NuGet Packages
 
-All packages share the same version (currently `9.1.4.1`) and are published from the [LimitlessSoft/LSCore](https://github.com/LimitlessSoft/LSCore) repository.
+All packages share the same version (currently `10.0.0`) and are published from the [LimitlessSoft/LSCore](https://github.com/LimitlessSoft/LSCore) repository.
 
 ### Core / Infrastructure
 

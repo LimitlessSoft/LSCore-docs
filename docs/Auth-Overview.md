@@ -126,9 +126,9 @@ LSCore.Auth.Contracts                        (shared types: ILSCoreAuthEntity, L
             +-- LSCore.Auth.Permission.DependencyInjection  (middleware, DI extensions)
 ```
 
-## NuGet Packages (v9.1.4.1)
+## NuGet Packages (v10.0.0)
 
-All packages target **.NET 9.0**.
+All packages target **.NET 10.0**.
 
 | Package | Description |
 |---------|-------------|
