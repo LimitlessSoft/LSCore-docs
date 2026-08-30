@@ -6,7 +6,7 @@ nav_order: 3
 
 # LSCore Sample Applications
 
-This guide describes each sample application in the `src/SampleApps/` directory, what it demonstrates, and how to run it. All samples target .NET 9 and follow the same project structure conventions.
+This guide describes each sample application in the `src/SampleApps/` directory, what it demonstrates, and how to run it. All samples target .NET 10 and follow the same project structure conventions.
 
 ---
 
