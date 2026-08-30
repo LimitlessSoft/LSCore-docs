@@ -57,8 +57,8 @@ public interface ILSCoreEntity : ILSCoreEntityBase
 | `Id` | `long` | Primary key |
 | `IsActive` | `bool` | Soft-delete flag. `true` means the record is active |
 | `CreatedAt` | `DateTime` | Set automatically on insert (UTC) |
-| `CreatedBy` | `long` | ID of the user who created the record |
-| `UpdatedBy` | `long?` | ID of the user who last updated the record |
+| `CreatedBy` | `long` | ID of the user who created the record. Set automatically on insert when a current user provider is registered |
+| `UpdatedBy` | `long?` | ID of the user who last updated the record. Set automatically on update and soft delete when a current user provider is registered |
 | `UpdatedAt` | `DateTime?` | Set automatically on update (UTC) |
 
 ### LSCoreEntity
@@ -128,23 +128,64 @@ public interface ILSCoreRepositoryBase<TEntity>
 | `Get(id)` | Returns the entity or throws `LSCoreNotFoundException` if not found or inactive |
 | `GetOrDefault(id)` | Returns the entity or `null`. Only returns active records (`IsActive == true`) |
 | `GetMultiple()` | Returns an `IQueryable<TEntity>` filtered to active records only |
-| `Insert(entity)` / `Insert(entities)` | Sets `CreatedAt` to `DateTime.UtcNow`, sets `IsActive` to `true`, then saves |
-| `Update(entity)` / `Update(entities)` | Sets `UpdatedAt` to `DateTime.UtcNow`, then saves |
+| `Insert(entity)` / `Insert(entities)` | Sets `CreatedAt` to the current UTC time, sets `IsActive` to `true`, sets `CreatedBy` if a current user is available, then saves |
+| `Update(entity)` / `Update(entities)` | Sets `UpdatedAt` to the current UTC time, sets `UpdatedBy` if a current user is available, then saves |
 | `UpdateOrInsert(entity)` | Calls `Insert` if `Id == 0`, otherwise calls `Update` |
-| `SoftDelete(...)` | Sets `IsActive = false` and `UpdatedAt = DateTime.UtcNow`, then saves |
+| `SoftDelete(...)` | Sets `IsActive = false`, `UpdatedAt` to the current UTC time, and `UpdatedBy` if a current user is available, then saves |
 | `HardDelete(...)` | Permanently removes the record(s) from the database |
 
 ### LSCoreRepositoryBase\<TEntity\>
 
-The concrete implementation. It takes an `ILSCoreDbContext` through its primary constructor.
+The concrete implementation. It takes an `ILSCoreDbContext` through its primary constructor, plus two optional dependencies.
 
 ```csharp
-public class LSCoreRepositoryBase<TEntity>(ILSCoreDbContext dbContext)
-    : ILSCoreRepositoryBase<TEntity>
+public class LSCoreRepositoryBase<TEntity>(
+    ILSCoreDbContext dbContext,
+    ILSCoreCurrentUserProvider? currentUserProvider = null,
+    TimeProvider? timeProvider = null
+) : ILSCoreRepositoryBase<TEntity>
     where TEntity : LSCoreEntity
 ```
 
-All methods are `virtual`, so you can override any of them in a derived repository.
+| Parameter | Purpose |
+|-----------|---------|
+| `dbContext` | The context the entity set is read from and written to |
+| `currentUserProvider` | Supplies the user stamped on `CreatedBy` and `UpdatedBy`. Omit it and those fields are left to you |
+| `timeProvider` | Source of the audit timestamps. Defaults to `TimeProvider.System`; pass a fake one to make timestamps assertable in tests |
+
+All methods are `virtual`, so you can override any of them in a derived repository. The two seams are also available as protected members -- `UtcNow` and `CurrentUserId` -- which you can override instead of injecting.
+
+#### Filling CreatedBy and UpdatedBy
+
+`ILSCoreCurrentUserProvider` is how the repository learns who is writing:
+
+```csharp
+public interface ILSCoreCurrentUserProvider
+{
+    long? CurrentUserId { get; }
+}
+```
+
+Implement it over whatever your application uses for the current user. With `LSCore.Auth`, that is the scoped `LSCoreAuthContextEntity<long>`:
+
+```csharp
+public class CurrentUserProvider(LSCoreAuthContextEntity<long> authContext)
+    : ILSCoreCurrentUserProvider
+{
+    public long? CurrentUserId => authContext.IsAuthenticated ? authContext.Identifier : null;
+}
+```
+
+Register it and take it in your repository's constructor:
+
+```csharp
+builder.Services.AddScoped<ILSCoreCurrentUserProvider, CurrentUserProvider>();
+
+public class ProductRepository(ILSCoreDbContext dbContext, ILSCoreCurrentUserProvider currentUser)
+    : LSCoreRepositoryBase<Product>(dbContext, currentUser), IProductRepository { }
+```
+
+From then on, `Insert` fills `CreatedBy`, and `Update` and `SoftDelete` fill `UpdatedBy`. When `CurrentUserId` is `null` -- an unauthenticated request, a background job -- the fields are left untouched. A `CreatedBy` you set yourself before calling `Insert` is never overwritten, so you can still record an insert made on behalf of another user.
 
 #### Creating a Repository
 
@@ -219,7 +260,7 @@ public interface ILSCoreEntityMap<TEntity>
 
 ### LSCoreEntityMap\<TEntity\>
 
-Abstract base class that automatically maps the standard `LSCoreEntity` fields (`Id` as primary key, `CreatedAt` and `IsActive` as required, `UpdatedAt` and `UpdatedBy` as optional). You provide entity-specific mapping through the `Mapper` property.
+Abstract base class that automatically maps the standard `LSCoreEntity` fields (`Id` as primary key, `CreatedAt`, `CreatedBy` and `IsActive` as required, `UpdatedAt` and `UpdatedBy` as optional). You provide entity-specific mapping through the `Mapper` property.
 
 ```csharp
 public abstract class LSCoreEntityMap<TEntity> : ILSCoreEntityMap<TEntity>
@@ -232,6 +273,7 @@ Default field mappings applied automatically:
 |-------|---------|
 | `Id` | Primary key (`HasKey`) |
 | `CreatedAt` | Required |
+| `CreatedBy` | Required |
 | `IsActive` | Required |
 | `UpdatedAt` | Optional |
 | `UpdatedBy` | Optional |
@@ -262,7 +304,7 @@ public class ProductMap : LSCoreEntityMap<Product>
 }
 ```
 
-You do not need to map `Id`, `CreatedAt`, `IsActive`, `UpdatedAt`, or `UpdatedBy` -- they are handled by the base class.
+You do not need to map `Id`, `CreatedAt`, `CreatedBy`, `IsActive`, `UpdatedAt`, or `UpdatedBy` -- they are handled by the base class.
 
 #### Suppressing Default Mapping
 
@@ -487,8 +529,8 @@ public class OrderService(IOrderRepository orderRepository)
 ## Key Behaviors
 
 - **All reads filter by `IsActive`**: `Get`, `GetOrDefault`, and `GetMultiple` only return records where `IsActive == true`. Soft-deleted records are invisible to standard queries.
-- **Insert sets audit fields automatically**: `CreatedAt` is set to `DateTime.UtcNow` and `IsActive` is set to `true` on every insert. You must set `CreatedBy` yourself.
-- **Update sets `UpdatedAt` automatically**: Every update sets `UpdatedAt` to `DateTime.UtcNow`. You must set `UpdatedBy` yourself.
+- **Insert sets audit fields automatically**: `CreatedAt` is set to the current UTC time and `IsActive` is set to `true` on every insert. `CreatedBy` is filled too when a current user provider is registered, unless you set it yourself first.
+- **Update and soft delete set audit fields automatically**: Every update sets `UpdatedAt` to the current UTC time, and `UpdatedBy` when a current user provider is registered.
 - **SaveChanges is called within each operation**: Each `Insert`, `Update`, `SoftDelete`, and `HardDelete` call triggers `SaveChanges()` immediately.
 - **`Get` throws on missing records**: `Get(id)` throws `LSCoreNotFoundException` (from `LSCore.Exceptions`) if the record does not exist or is inactive. Use `GetOrDefault(id)` for a null-returning alternative.
 - **`UpdateOrInsert` checks `Id == 0`**: If the entity's `Id` is `0`, it inserts; otherwise, it updates.
