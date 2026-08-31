@@ -15,7 +15,7 @@ The SortAndPage module provides a standardized approach to sorting and paginatin
 | `LSCore.SortAndPage.Contracts` | Request/response models, sort rules, pagination data, and the `IQueryable` extension methods for building queries. No external dependencies. |
 | `LSCore.SortAndPage.Domain` | The `ToSortedAndPagedResponse` extension methods that execute queries and return fully populated responses. Depends on the Contracts package. |
 
-Both packages target **.NET 9.0**.
+Both packages target **.NET 10.0**.
 
 ---
 

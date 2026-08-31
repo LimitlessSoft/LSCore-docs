@@ -26,7 +26,7 @@ LSCore uses the exception-based approach because the performance difference is n
 | `LSCore.Exceptions` | Core exception classes. No ASP.NET Core dependency. |
 | `LSCore.Exceptions.DependencyInjection` | ASP.NET Core middleware that catches LSCore exceptions and sets the HTTP response status code. Depends on `LSCore.Exceptions` and the `Microsoft.AspNetCore.App` framework reference. |
 
-Both packages target **.NET 9.0** (version 9.1.5 at time of writing).
+Both packages target **.NET 10.0** (version 10.0.0 at time of writing).
 
 ## Exception Types
 

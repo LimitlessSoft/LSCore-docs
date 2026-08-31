@@ -16,10 +16,10 @@ The validation system is split into two packages:
 
 | Package | Description | Version |
 |---------|-------------|---------|
-| `LSCore.Validation.Contracts` | Interfaces and attributes -- no external dependencies | 9.1.4.1 |
-| `LSCore.Validation.Domain` | Base class, extension methods, and FluentValidation integration | 9.1.4.1 |
+| `LSCore.Validation.Contracts` | Interfaces and attributes -- no external dependencies | 10.0.0 |
+| `LSCore.Validation.Domain` | Base class, extension methods, and FluentValidation integration | 10.0.0 |
 
-Both target **.NET 9.0**.
+Both target **.NET 10.0**.
 
 ### Dependencies
 

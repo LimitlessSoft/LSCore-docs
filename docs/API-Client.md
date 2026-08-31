@@ -15,7 +15,7 @@ The LSCore API Client module provides a base class and supporting infrastructure
 | `LSCore.ApiClient.Rest` | Core API client base class, configuration interface, and HTTP extensions. |
 | `LSCore.ApiClient.Rest.DependencyInjection` | `WebApplicationBuilder` extension for registering API clients in the DI container. |
 
-Both packages target **.NET 9.0**.
+Both packages target **.NET 10.0**.
 
 ### Dependencies
 

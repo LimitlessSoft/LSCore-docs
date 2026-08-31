@@ -17,7 +17,7 @@ The LSCore Repository module provides a lightweight repository pattern implement
 
 `LSCore.Repository` depends on `LSCore.Repository.Contracts` and `LSCore.Exceptions`, so you only need to reference `LSCore.Repository` directly in your data access project. Reference `LSCore.Repository.Contracts` alone in projects that only need the interfaces (for example, a service layer or domain project).
 
-Both packages target **.NET 9.0**.
+Both packages target **.NET 10.0**.
 
 ---
 

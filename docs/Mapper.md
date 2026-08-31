@@ -12,10 +12,10 @@ The LSCore Mapper module provides a lightweight, convention-based object mapping
 
 | Package | Description |
 |---|---|
-| `LSCore.Mapper.Contracts` | Contains the `ILSCoreMapper<TSource, TDestination>` interface. No dependencies beyond .NET 9.0. Reference this package from any layer that needs to define mapper implementations. |
+| `LSCore.Mapper.Contracts` | Contains the `ILSCoreMapper<TSource, TDestination>` interface. No dependencies beyond .NET 10.0. Reference this package from any layer that needs to define mapper implementations. |
 | `LSCore.Mapper.Domain` | Contains the `ToMapped` and `ToMappedList` extension methods that resolve mappers at runtime. Depends on `LSCore.Mapper.Contracts` and `LSCore.DependencyInjection`. Reference this package from layers that need to invoke mapping. |
 
-Both packages target **.NET 9.0** (version 9.1.4.1 at time of writing).
+Both packages target **.NET 10.0** (version 10.0.0 at time of writing).
 
 ## The Mapper Interface
 

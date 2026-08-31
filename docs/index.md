@@ -7,9 +7,13 @@ permalink: /
 
 # LSCore Documentation
 
-LSCore is a collection of free and open-source .NET 9.0 libraries that simplify building ASP.NET Core APIs. Its core principles are **simplicity** and **abstraction**: features are divided into independent packages so you include only what you need.
+LSCore is a collection of free and open-source .NET 10.0 libraries that simplify building ASP.NET Core APIs. Its core principles are **simplicity** and **abstraction**: features are divided into independent packages so you include only what you need.
 
-All packages are published to [NuGet](https://www.nuget.org/profiles/LimitlessSoft) and share a synchronized version (currently **9.1.4.1**).
+All packages are published to [NuGet](https://www.nuget.org/profiles/LimitlessSoft) and share a synchronized version (currently **10.0.0**).
+
+> **Upgrading from 9.x?** 10.0.0 targets `net10.0`. The major version tracks the targeted .NET
+> version, so moving to it requires retargeting your application to .NET 10. The 9.1.x line remains
+> on NuGet and continues to target `net9.0`.
 
 ---
 
@@ -132,4 +136,5 @@ For hands-on learners, explore the `src/SampleApps` directory which contains wor
 - **NuGet Packages**: [https://www.nuget.org/profiles/LimitlessSoft](https://www.nuget.org/profiles/LimitlessSoft)
 - **Issues**: [https://github.com/LimitlessSoft/LSCore/issues](https://github.com/LimitlessSoft/LSCore/issues)
 - **Feature Requests**: [https://github.com/LimitlessSoft/LSCore/discussions/categories/request-feature](https://github.com/LimitlessSoft/LSCore/discussions/categories/request-feature)
+- **Releases**: [GitHub Releases](https://github.com/LimitlessSoft/LSCore/releases) -- each release links to its discussion thread, where that version's changes are collected
 - **Postman Collection**: [LSCore.postman_collection.json](https://github.com/user-attachments/files/19439535/LSCore.postman_collection.json)
