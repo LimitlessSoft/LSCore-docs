@@ -11,9 +11,11 @@ LSCore is a collection of free and open-source .NET 10.0 libraries that simplify
 
 All packages are published to [NuGet](https://www.nuget.org/profiles/LimitlessSoft) and share a synchronized version (currently **10.0.0**).
 
+<!-- version-sweep:ignore start -->
 > **Upgrading from 9.x?** 10.0.0 targets `net10.0`. The major version tracks the targeted .NET
 > version, so moving to it requires retargeting your application to .NET 10. The 9.1.x line remains
 > on NuGet and continues to target `net9.0`.
+<!-- version-sweep:ignore end -->
 
 ---
 
